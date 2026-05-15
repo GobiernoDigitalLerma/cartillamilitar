@@ -1,0 +1,403 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Formulario Cartilla Militar</title>
+    <link rel="stylesheet" href="/static/styles.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #f0f2f5;
+            padding: 20px;
+        }
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 15px;
+            padding: 30px;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #1a3a2b;
+            text-align: center;
+            margin-bottom: 10px;
+        }
+        h2 {
+            color: #2e7d32;
+            margin: 25px 0 15px 0;
+            border-bottom: 2px solid #2e7d32;
+            padding-bottom: 5px;
+        }
+        .form-group {
+            margin-bottom: 20px;
+        }
+        label {
+            display: block;
+            font-weight: bold;
+            margin-bottom: 5px;
+            color: #333;
+        }
+        input, select, textarea {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            font-size: 14px;
+        }
+        input:focus, select:focus, textarea:focus {
+            outline: none;
+            border-color: #2e7d32;
+        }
+        /* Grupo de documento con campo de texto + botón (para CURP) */
+        .documento-row {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+        .documento-row input[type="text"] {
+            flex: 2;
+            min-width: 200px;
+        }
+        .documento-row .file-wrapper {
+            flex: 0 0 auto;
+            position: relative;
+        }
+        .documento-row .file-wrapper input[type="file"] {
+            position: absolute;
+            opacity: 0;
+            width: 100%;
+            height: 100%;
+            cursor: pointer;
+        }
+        .documento-row .file-label {
+            display: block;
+            background: #2e7d32;
+            color: white;
+            text-align: center;
+            padding: 8px 15px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 12px;
+            transition: all 0.3s ease;
+            white-space: nowrap;
+        }
+        .documento-row .file-label:hover {
+            background: #1b5e20;
+        }
+        /* Grupo de documento solo botón */
+        .documento-simple {
+            display: inline-block;
+        }
+        .documento-simple .file-wrapper {
+            position: relative;
+            display: inline-block;
+        }
+        .documento-simple .file-wrapper input[type="file"] {
+            position: absolute;
+            opacity: 0;
+            width: 100%;
+            height: 100%;
+            cursor: pointer;
+        }
+        .documento-simple .file-label {
+            display: inline-block;
+            background: #2e7d32;
+            color: white;
+            text-align: center;
+            padding: 6px 12px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 11px;
+            transition: all 0.3s ease;
+        }
+        .documento-simple .file-label:hover {
+            background: #1b5e20;
+        }
+        .file-name {
+            font-size: 11px;
+            color: #2e7d32;
+            margin-top: 5px;
+            word-break: break-all;
+        }
+        button {
+            background: #2e7d32;
+            color: white;
+            padding: 12px 25px;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            width: 100%;
+            transition: all 0.3s ease;
+        }
+        button:hover {
+            background: #1b5e20;
+            transform: scale(1.02);
+        }
+        .success {
+            background: #d4edda;
+            color: #155724;
+            padding: 12px;
+            border-radius: 8px;
+            margin-top: 20px;
+            text-align: center;
+        }
+        .error {
+            background: #f8d7da;
+            color: #721c24;
+            padding: 12px;
+            border-radius: 8px;
+            margin-top: 20px;
+            text-align: center;
+        }
+        .required {
+            color: #dc3545;
+        }
+        #domicilio_text {
+            padding: 6px 10px;
+            font-size: 13px;
+            height: 60px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>📋 Servicio Militar Nacional</h1>
+        <h2>Datos del Interesado</h2>
+        
+        <form id="formulario" enctype="multipart/form-data">
+            <input type="hidden" id="correo" value="{{ correo }}">
+            
+            <!-- 1. Nombre completo -->
+            <div class="form-group">
+                <label>Nombre completo: <span class="required">*</span></label>
+                <input type="text" id="nombre_completo" required placeholder="">
+            </div>
+            
+            <!-- 2. Fecha de nacimiento -->
+            <div class="form-group">
+                <label>Fecha de nacimiento: <span class="required">*</span></label>
+                <input type="date" id="fecha_nacimiento" required>
+            </div>
+            
+            <!-- 3. Acta de Nacimiento (solo botón PDF) -->
+            <div class="form-group">
+                <label>Acta de Nacimiento: <span class="required">*</span></label>
+                <div class="documento-simple">
+                    <div class="file-wrapper">
+                        <div class="file-label" id="acta_label"> Subir PDF</div>
+                        <input type="file" id="acta_nacimiento" accept=".pdf" required>
+                    </div>
+                </div>
+                <div id="acta_nombre" class="file-name"></div>
+            </div>
+            
+            <!-- 4. Nació en -->
+            <div class="form-group">
+                <label>Nació en:</label>
+                <input type="text" id="nacio_en" placeholder="">
+            </div>
+            
+            <!-- 5. Hijo de -->
+            <div class="form-group">
+                <label>Hijo de:</label>
+                <input type="text" id="nombre_padre" placeholder="Nombre del padre">
+            </div>
+            
+            <!-- 6. Y de -->
+            <div class="form-group">
+                <label>Y de:</label>
+                <input type="text" id="nombre_madre" placeholder="Nombre de la madre">
+            </div>
+            
+            <!-- 7. Estado civil -->
+            <div class="form-group">
+                <label>Estado civil:</label>
+                <select id="estado_civil">
+                    <option value="Soltero">Soltero</option>
+                    <option value="Casado">Casado</option>
+                    <option value="Divorciado">Divorciado</option>
+                    <option value="Viudo">Viudo</option>
+                    <option value="Union Libre">Unión Libre</option>
+                </select>
+            </div>
+            
+            <!-- 8. Ocupación -->
+            <div class="form-group">
+                <label>Ocupación:</label>
+                <input type="text" id="ocupacion" placeholder="">
+            </div>
+            
+            <!-- 9. ¿Sabe leer y escribir? -->
+            <div class="form-group">
+                <label>¿Sabe leer y escribir?</label>
+                <select id="sabe_leer">
+                    <option value="true">Sí</option>
+                    <option value="false">No</option>
+                </select>
+            </div>
+            
+            <!-- 10. CURP (texto) + 11. Subir archivo CURP -->
+            <div class="form-group">
+                <label>CURP: <span class="required">*</span></label>
+                <div class="documento-row">
+                    <input type="text" id="curp_text" maxlength="18" placeholder="Ingrese su CURP" required>
+                    <div class="file-wrapper">
+                        <div class="file-label" id="curp_label"> Subir PDF</div>
+                        <input type="file" id="curp_pdf" accept=".pdf" required>
+                    </div>
+                </div>
+                <div id="curp_nombre" class="file-name"></div>
+            </div>
+            
+            <!-- 12. Grado máximo de estudios -->
+            <div class="form-group">
+                <label>Grado máximo de estudios:</label>
+                <select id="grado_estudios">
+                    <option value="Ninguno">Ninguno</option>
+                    <option value="Primaria">Primaria</option>
+                    <option value="Secundaria">Secundaria</option>
+                    <option value="Preparatoria">Preparatoria</option>
+                    <option value="Licenciatura">Licenciatura</option>
+                    <option value="Posgrado">Posgrado</option>
+                </select>
+            </div>
+            
+            <!-- 13. Comprobante de estudios (solo botón PDF) -->
+            <div class="form-group">
+                <label>Comprobante de Estudios: <span class="required">*</span></label>
+                <div class="documento-simple">
+                    <div class="file-wrapper">
+                        <div class="file-label" id="estudios_label"> Subir PDF</div>
+                        <input type="file" id="comprobante_estudios" accept=".pdf" required>
+                    </div>
+                </div>
+                <div id="estudios_nombre" class="file-name"></div>
+            </div>
+            
+            <!-- 14. Domicilio -->
+            <div class="form-group">
+                <label>Domicilio completo:</label>
+                <textarea id="domicilio_text" rows="2" placeholder="Calle, número, colonia, código postal, municipio, estado"></textarea>
+            </div>
+            
+            <!-- 15. Comprobante de domicilio (solo botón PDF) -->
+            <div class="form-group">
+                <label>Comprobante de Domicilio: <span class="required">*</span></label>
+                <div class="documento-simple">
+                    <div class="file-wrapper">
+                        <div class="file-label" id="domicilio_label"> Subir PDF</div>
+                        <input type="file" id="comprobante_domicilio" accept=".pdf" required>
+                    </div>
+                </div>
+                <div id="domicilio_nombre" class="file-name"></div>
+            </div>
+            
+            <button type="submit">📨 Enviar Solicitud</button>
+            <div id="mensaje"></div>
+        </form>
+    </div>
+    
+    <script>
+        // Función para manejar la subida de archivos y mostrar el nombre
+        function setupFileUpload(inputId, labelId, nombreId) {
+            const input = document.getElementById(inputId);
+            const label = document.getElementById(labelId);
+            const nombreSpan = document.getElementById(nombreId);
+            
+            if (input && label) {
+                label.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    input.click();
+                });
+                
+                input.addEventListener('change', function(e) {
+                    const archivo = e.target.files[0];
+                    if (archivo) {
+                        nombreSpan.innerHTML = `📄 ${archivo.name}`;
+                        label.style.background = "#1b5e20";
+                    } else {
+                        nombreSpan.innerHTML = '';
+                        label.style.background = "#2e7d32";
+                    }
+                });
+            }
+        }
+        
+        // Configurar todos los uploads
+        setupFileUpload('curp_pdf', 'curp_label', 'curp_nombre');
+        setupFileUpload('acta_nacimiento', 'acta_label', 'acta_nombre');
+        setupFileUpload('comprobante_estudios', 'estudios_label', 'estudios_nombre');
+        setupFileUpload('comprobante_domicilio', 'domicilio_label', 'domicilio_nombre');
+        
+        document.getElementById("formulario").addEventListener("submit", async function(e) {
+            e.preventDefault();
+            
+            const formData = new FormData();
+            
+            // Datos de texto
+            formData.append("correo", document.getElementById("correo").value);
+            formData.append("nombre_completo", document.getElementById("nombre_completo").value);
+            formData.append("fecha_nacimiento", document.getElementById("fecha_nacimiento").value);
+            formData.append("nacio_en", document.getElementById("nacio_en").value);
+            formData.append("nombre_padre", document.getElementById("nombre_padre").value);
+            formData.append("nombre_madre", document.getElementById("nombre_madre").value);
+            formData.append("estado_civil", document.getElementById("estado_civil").value);
+            formData.append("ocupacion", document.getElementById("ocupacion").value);
+            formData.append("sabe_leer", document.getElementById("sabe_leer").value === "true");
+            formData.append("curp", document.getElementById("curp_text").value);
+            formData.append("grado_estudios", document.getElementById("grado_estudios").value);
+            formData.append("domicilio", document.getElementById("domicilio_text").value);
+            
+            // Archivos PDF
+            const curpFile = document.getElementById("curp_pdf").files[0];
+            const actaFile = document.getElementById("acta_nacimiento").files[0];
+            const estudiosFile = document.getElementById("comprobante_estudios").files[0];
+            const domicilioFile = document.getElementById("comprobante_domicilio").files[0];
+            
+            if (!curpFile || !actaFile || !estudiosFile || !domicilioFile) {
+                document.getElementById("mensaje").innerHTML = '<div class="error">❌ Debes subir todos los documentos requeridos (CURP, Acta, Comprobante de estudios, Comprobante de domicilio)</div>';
+                return;
+            }
+            
+            formData.append("curp_pdf", curpFile);
+            formData.append("acta_nacimiento", actaFile);
+            formData.append("comprobante_estudios", estudiosFile);
+            formData.append("comprobante_domicilio", domicilioFile);
+            
+            const mensajeDiv = document.getElementById("mensaje");
+            mensajeDiv.innerHTML = '<div class="success">📤 Enviando solicitud...</div>';
+            
+            try {
+                const response = await fetch("/guardar-solicitud-completa", {
+                    method: "POST",
+                    body: formData
+                });
+                
+                const result = await response.json();
+                
+                if (response.ok) {
+                    mensajeDiv.innerHTML = `<div class="success">✅ ${result.mensaje}</div>`;
+                    setTimeout(() => {
+                        window.location.href = "/";
+                    }, 3000);
+                } else {
+                    mensajeDiv.innerHTML = `<div class="error">❌ ${result.detail || "Error al enviar"}</div>`;
+                }
+            } catch (error) {
+                console.error("Error:", error);
+                mensajeDiv.innerHTML = '<div class="error">❌ Error de conexión</div>';
+            }
+        });
+    </script>
+</body>
+</html>
