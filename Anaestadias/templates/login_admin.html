@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login Administrador</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #1a3a2b 0%, #2e7d32 100%);
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin: 0;
+        }
+        .login-container {
+            background: white;
+            padding: 40px;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            width: 100%;
+            max-width: 400px;
+        }
+        h2 {
+            color: #1a3a2b;
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        .form-group {
+            margin-bottom: 20px;
+        }
+        label {
+            display: block;
+            font-weight: bold;
+            margin-bottom: 5px;
+            color: #333;
+        }
+        input {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            font-size: 14px;
+        }
+        input:focus {
+            outline: none;
+            border-color: #2e7d32;
+        }
+        button {
+            width: 100%;
+            padding: 12px;
+            background: #2e7d32;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        button:hover {
+            background: #1b5e20;
+            transform: scale(1.02);
+        }
+        .error {
+            color: #dc3545;
+            text-align: center;
+            margin-top: 15px;
+            font-size: 14px;
+        }
+        .register-link {
+            text-align: center;
+            margin-top: 20px;
+            font-size: 14px;
+        }
+        .register-link a {
+            color: #2e7d32;
+            text-decoration: none;
+        }
+        .register-link a:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+    <div class="login-container">
+        <h2>🔐 Acceso Administrador</h2>
+        
+        <form id="loginForm">
+            <div class="form-group">
+                <label>📧 Correo Electrónico</label>
+                <input type="email" id="correo" required placeholder="correo@empresa.com">
+            </div>
+            
+            <div class="form-group">
+                <label>🔒 Contraseña</label>
+                <input type="password" id="password" required placeholder="••••">
+            </div>
+            
+            <button type="submit">Iniciar Sesión</button>
+            
+            <div id="errorMessage" class="error"></div>
+        </form>
+        
+        <div class="register-link">
+            ¿No tienes cuenta? <a href="/crear-admin-panel">Registrar Administrador</a>
+        </div>
+    </div>
+    
+    <script>
+        document.getElementById("loginForm").addEventListener("submit", async function(e) {
+            e.preventDefault();
+            
+            const correo = document.getElementById("correo").value;
+            const password = document.getElementById("password").value;
+            
+            const mensajeDiv = document.getElementById("errorMessage");
+            mensajeDiv.innerText = "🔐 Verificando...";
+            
+            try {
+                const response = await fetch("/login-admin", {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/x-www-form-urlencoded"
+                    },
+                    body: new URLSearchParams({
+                        correo: correo,
+                        password: password
+                    })
+                });
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    
+                    localStorage.setItem("admin_logged_in", "true");
+                    localStorage.setItem("admin_correo", data.correo);
+                    localStorage.setItem("admin_rol", data.rol);
+                    localStorage.setItem("admin_id", data.admin_id);
+                    localStorage.setItem("admin_nombre", data.nombre);
+                    
+                    if (data.rol === "super_admin") {
+                        window.location.href = "/admin-administradores";
+                    } else {
+                        window.location.href = "/admin-solicitudes";
+                    }
+                } else {
+                    const error = await response.json();
+                    mensajeDiv.innerText = error.detail || "Error al iniciar sesión";
+                }
+            } catch (error) {
+                console.error("Error:", error);
+                mensajeDiv.innerText = "❌ Error de conexión. ¿El servidor está corriendo?";
+            }
+        });
+    </script>
+</body>
+</html>
